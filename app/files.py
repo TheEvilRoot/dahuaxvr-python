@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 
-import cv2
 from requests.auth import HTTPDigestAuth
 
+from app.show_camera import Player
 from dahuaxvr.camera_stream import CameraStream
 from dahuaxvr.cgi.config_manager import ConfigManagerCgi
 from dahuaxvr.cgi.media_file_find import MediaFileFindCgi
@@ -18,25 +18,31 @@ def main():
     args = parser.parse_args()
     auth = HTTPDigestAuth(args.user, args.password)
     cgi = MediaFileFindCgi(f'http://{args.host}', auth)
+
     with MediaFileFinder(cgi) as finder:
         files = finder.find_iter(
-            start_date=datetime.now() - timedelta(days=2),
+            start_date=datetime.now() - timedelta(hours=5),
             end_date=datetime.now()
         )
-        for file in files:
+        files = list(files)
+
+    while True:
+        print(f'Found {len(files)} files')
+        for index, file in enumerate(files):
+            print(f'{index:>2}. {file["StartTime"]} - {file["EndTime"]} | {file["VideoStream"]}')
+        try:
+            index = int(input('Index > '))
+            file = files[index]
             config_cgi = ConfigManagerCgi(f'http://{args.host}', auth)
             rtsp_config = config_cgi.GetRTSPConfig()
             cam = CameraStream(args.host, rtsp_config['table']['RTSP']['Port'], auth)
-            def handler(frame, index):
-                cv2.imshow(file['FilePath'], frame)
-                return not (cv2.waitKey(20) & 0xFF == ord('q'))
-            cam.GetFrameStream(
-                uri=cam.GetFileUri(file),
-                processor=lambda frame, index: frame,
-                handler=handler
-            )
-            cv2.destroyAllWindows()
+            player = Player(cam, cam.GetFileUri(file))
+            player.run()
+        except KeyboardInterrupt:
+            print('Exiting.')
             break
+        except:
+            print('Error occurred!')
 
 
 if __name__ == '__main__':

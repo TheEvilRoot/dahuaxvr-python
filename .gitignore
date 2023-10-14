@@ -1,4 +1,4 @@
-haarcascade_frontalface_default.xml
+app/haarcascade_frontalface_default.xml
 .DS_Store
 
 venv/
