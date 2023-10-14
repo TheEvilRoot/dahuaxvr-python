@@ -10,10 +10,10 @@ class CameraStream:
         self.port = port
         self.authorization = authorization
 
-    def GetFrameStream(self, channel: int, sub_type: int,
+    def GetFrameStream(self, uri: str,
                        processor: Callable[[cv2.typing.MatLike, int], cv2.typing.MatLike],
                        handler: Callable[[cv2.typing.MatLike, int], bool]):
-        cap = self.GetOpenCvStream(channel, sub_type)
+        cap = self.GetOpenCvStream(uri)
         index = 0
         while cap.isOpened():
             index += 1
@@ -26,6 +26,8 @@ class CameraStream:
     def GetStreamUri(self, channel: int, sub_type: int):
         return f'rtsp://{self.authorization.username}:{self.authorization.password}@{self.host}:{self.port}/cam/realmonitor?channel={channel}&subtype={sub_type}'
 
-    def GetOpenCvStream(self, channel: int, sub_type: int):
-        cap = cv2.VideoCapture(self.GetStreamUri(channel, sub_type))
-        return cap
+    def GetFileUri(self, file: dict):
+        return f'rtsp://{self.authorization.username}:{self.authorization.password}@{self.host}:{self.port}/{file["FilePath"]}'
+
+    def GetOpenCvStream(self, uri: str):
+        return cv2.VideoCapture(uri)

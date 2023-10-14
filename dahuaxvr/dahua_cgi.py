@@ -3,6 +3,8 @@ from typing import List, Optional
 
 import requests
 
+from dahuaxvr.table import TableBuilder
+
 
 class DahuaCgi:
 
@@ -21,21 +23,23 @@ class DahuaCgi:
 
     def table_parse(self, response: requests.Response) -> dict:
         content = response.content.decode()
-        ret = dict()
-        print(content)
+        t = TableBuilder()
         for line in content.splitlines():
             line = line.strip()
             if len(line) == 0:
                 continue
             key, value = line.split('=')
-            ret[key] = value
-
-        return ret
+            keys = key.split('.')
+            t.push(keys, value)
+        return t.build()
 
 
     def assert_response(self, response: requests.Response):
         assert response.status_code == 200, f'status code {response.status_code}\n\nResponse:\n{response.content}\n\nRequest headers:\n{response.request.headers}'
         return response
+
+    def assert_ok(self, response: requests.Response):
+        return response.content.decode().strip() == 'OK'
 
     def cgi_get(self, cgi: str, params: str | dict, stream: bool = False) -> requests.Response:
         return self.client.get(

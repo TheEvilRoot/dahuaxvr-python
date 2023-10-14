@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 
 from dahuaxvr.cgi.media_file_find import MediaFileFindCgi
@@ -8,15 +9,45 @@ class MediaFileFinder:
                  ):
         self.cgi = cgi
         self.handle = None
-        self.closed = False
+        self.closed = True
         self.destroyed = False
 
-    def next(self):
-        pass
+    def find_iter(self,
+                  start_date: datetime,
+                  end_date: datetime,
+                  channel: int = 1,
+                  dirs: List[str] = None,
+                  events: List[str] = None,
+                  types: List[str] = None,
+                  flags: List[str] = None,
+                  batch_size: int = 10
+                  ):
+        assert not self.destroyed, 'find_iter could be called after destroy'
+        assert self.closed, 'find_iter could not be called twice without close'
+
+        started = self.cgi.StartFind(
+            handle=self.handle,
+            channel=channel,
+            dirs=dirs or [],
+            events=events or [],
+            start_time=start_date,
+            end_time=end_date,
+            types=types or [],
+            flags=flags or []
+        )
+        if not started:
+            return None
+        self.closed = False
+        try:
+            while True:
+                batch = self.cgi.FindNextFile(self.handle, batch_size)
+                if int(batch['found']) == 0:
+                    break
+                yield from batch['items']
+        finally:
+            self.close()
 
     def close(self):
-        if self.closed:
-            return
         if self.handle is None:
             return
         try:
@@ -50,5 +81,3 @@ class MediaFileFinder:
 
     def __repr__(self):
         return f'MediaFileFinder(handle={self.handle}, cgi={self.cgi.host})'
-
-

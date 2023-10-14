@@ -8,7 +8,8 @@ class MediaFileFindCgi(DahuaCgi):
 
     def FindNextFile(self, handle,
                      count: int):
-        response = self.assert_response(self.cgi_get('mediaFileFind', {'action': 'findNextFile', 'object': str(handle), 'count': count}))
+        params = {'action': 'findNextFile', 'object': str(handle), 'count': count}
+        response = self.assert_response(self.cgi_get('mediaFileFind', params))
         table = self.table_parse(response)
         return table
 
@@ -35,7 +36,7 @@ class MediaFileFindCgi(DahuaCgi):
         params = '&'.join([f'{key}={requote_uri(value)}' for key, value in params.items() if value is not None])
         response = self.assert_response(self.cgi_get('mediaFileFind', params))
         print(response.content)
-        return response.content.decode().strip() == 'OK'
+        return self.assert_ok(response)
 
     def Create(self):
         response = self.assert_response(self.cgi_get('mediaFileFind', {'action': 'factory.create'}))
@@ -44,8 +45,8 @@ class MediaFileFindCgi(DahuaCgi):
 
     def Close(self, handle):
         response = self.assert_response(self.cgi_get('mediaFileFind', {'action': 'close', 'object': handle}))
-        return response.content.decode().strip() == 'OK'
+        return self.assert_ok(response)
 
     def Destroy(self, handle):
         response = self.assert_response(self.cgi_get('mediaFileFind', {'action': 'destroy', 'object': handle}))
-        return response.content.decode().strip() == 'OK'
+        return self.assert_ok(response)

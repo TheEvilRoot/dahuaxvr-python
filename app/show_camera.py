@@ -1,5 +1,7 @@
 import cv2
 from requests.auth import HTTPDigestAuth
+from queue import Queue
+from threading import Thread
 
 from dahuaxvr.camera_stream import CameraStream
 from dahuaxvr.cgi.config_manager import ConfigManagerCgi
@@ -16,10 +18,9 @@ def main():
     auth = HTTPDigestAuth(args.user, args.password)
     cgi = ConfigManagerCgi(f'http://{args.host}', auth)
     rtsp_config = cgi.GetRTSPConfig()
-    cam = CameraStream(args.host, rtsp_config['table.RTSP.Port'], auth)
+    cam = CameraStream(args.host, rtsp_config['table']['RTSP']['Port'], auth)
     face_classifier = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 
-    from queue import Queue
     write_queue = Queue()
 
     def writer():
@@ -32,7 +33,6 @@ def main():
             out.write(frame)
         out.release()
 
-    from threading import Thread
     write_thread = Thread(target=writer)
 
     def processor(frame, index):
@@ -43,15 +43,16 @@ def main():
         for (x, y, w, h) in face:
             cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 4)
         return frame
+
     def handler(frame, index):
         if not write_thread.is_alive():
             write_thread.start()
         cv2.imshow('Video', frame)
         write_queue.put(frame)
         return not (cv2.waitKey(20) & 0xFF == ord('q'))
+
     cam.GetFrameStream(
-        channel=1,
-        sub_type=1,
+        uri=cam.GetStreamUri(channel=1, sub_type=1),
         processor=processor,
         handler=handler
     )
