@@ -1,0 +1,25 @@
+[project]
+name = "dahuaxvr"
+version = "1.0"
+authors = [
+    {name = "TheEvilRoot", email = "theevilroot@theevilroot.xyz"},
+]
+description = "Dahua XVR HTTP API wrapper"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "requests",
+    "Pillow",
+    "opencv-python"
+]
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["dahuaxvr", "dahuaxvr.*"]
+exclude = []
