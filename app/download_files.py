@@ -1,3 +1,8 @@
+"""
+Usage example:
+$ PYTHONPATH=. python3 app/download_files.py -u admin --password-raw password 192.168.1.2 -o /Volumes/Storage/CCTV/ --remove-first-parents 3
+"""
+
 import os.path
 from datetime import datetime, timedelta
 
