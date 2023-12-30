@@ -39,9 +39,12 @@ class TableBuilder:
             line = line.strip()
             if len(line) == 0:
                 continue
-            key, value = line.split('=')
-            keys = key.split('.')
-            t.push(keys, value)
+            try:
+                key, value = line.split('=')
+                keys = key.split('.')
+                t.push(keys, value)
+            except Exception as e:
+                print(e, content)
         return t.build()
 
     def __init__(self):

@@ -35,7 +35,6 @@ class MediaFileFindCgi(DahuaCgi):
         }
         params = '&'.join([f'{key}={requote_uri(value)}' for key, value in params.items() if value is not None])
         response = self.assert_response(self.cgi_get('mediaFileFind', params))
-        print(response.content)
         return self.assert_ok(response)
 
     def Create(self):

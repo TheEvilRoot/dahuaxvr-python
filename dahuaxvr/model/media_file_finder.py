@@ -53,7 +53,7 @@ class MediaFileFinder:
         try:
             if self.cgi.Close(self.handle):
                 self.closed = True
-                print(self.closed)
+                print('closed', self.handle, self.closed)
         except:
             pass
 
@@ -66,14 +66,14 @@ class MediaFileFinder:
         try:
             if self.cgi.Destroy(self.handle):
                 self.destroyed = True
-                print(self.destroyed)
+                print('destroyed', self.handle, self.destroyed)
         except:
             pass
 
     def __enter__(self):
         if self.handle is None:
             self.handle = self.cgi.Create()
-            print(self.handle)
+            print('enter', self.handle)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
